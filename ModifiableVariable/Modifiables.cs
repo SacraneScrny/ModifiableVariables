@@ -6,6 +6,43 @@ using ModifiableVariable.Stages.StageFactory;
 namespace ModifiableVariable
 {
     [Serializable]
+    public class GateModifiable<T> : Modifiable<T, GateGeneral>
+    {
+        public GateModifiable(T baseValue, params (GateGeneral, StageOp<T>)[] stages) :
+            base(baseValue, stages) { }
+        public GateModifiable(T baseValue) : base(baseValue) { }
+        public static implicit operator T(GateModifiable<T> obj) => obj.GetValue();
+        public static implicit operator GateModifiable<T>(T obj) => new(obj);
+    }
+    [Serializable]
+    public class GateConjunctionModifiable<T> : Modifiable<T, GateConjunction>
+    {
+        public GateConjunctionModifiable(T baseValue, params (GateConjunction, StageOp<T>)[] stages) :
+            base(baseValue, stages) { }
+        public GateConjunctionModifiable(T baseValue) : base(baseValue) { }
+        public static implicit operator T(GateConjunctionModifiable<T> obj) => obj.GetValue();
+        public static implicit operator GateConjunctionModifiable<T>(T obj) => new(obj);
+    }
+    [Serializable]
+    public class GateDisjunctionModifiable<T> : Modifiable<T, GateDisjunction>
+    {
+        public GateDisjunctionModifiable(T baseValue, params (GateDisjunction, StageOp<T>)[] stages) :
+            base(baseValue, stages) { }
+        public GateDisjunctionModifiable(T baseValue) : base(baseValue) { }
+        public static implicit operator T(GateDisjunctionModifiable<T> obj) => obj.GetValue();
+        public static implicit operator GateDisjunctionModifiable<T>(T obj) => new(obj);
+    }
+    [Serializable]
+    public class GateComplexModifiable<T> : Modifiable<T, GateComplex>
+    {
+        public GateComplexModifiable(T baseValue, params (GateComplex, StageOp<T>)[] stages) :
+            base(baseValue, stages) { }
+        public GateComplexModifiable(T baseValue) : base(baseValue) { }
+        public static implicit operator T(GateComplexModifiable<T> obj) => obj.GetValue();
+        public static implicit operator GateComplexModifiable<T>(T obj) => new(obj);
+    }
+    
+    [Serializable]
     public class Modifiable<T> : Modifiable<T, General>
     {
         public Modifiable(T baseValue, params (General, StageOp<T>)[] stages) :

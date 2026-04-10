@@ -1,5 +1,29 @@
 ﻿namespace ModifiableVariable.Stages.StageFactory
-{
+{    
+    public enum GateDisjunction
+    {
+        [StageOp(StageOpKind.Or)] DisjunctionState,
+        [StageOp(StageOpKind.Override)] Override,
+    }
+    public enum GateConjunction
+    {
+        [StageOp(StageOpKind.And)] ConjunctionState,
+        [StageOp(StageOpKind.Override)] Override,
+    }
+    public enum GateGeneral
+    {
+        [StageOp(StageOpKind.Or)] DisjunctionState,
+        [StageOp(StageOpKind.And)] ConjunctionState,
+        [StageOp(StageOpKind.Override)] Override,
+    }
+    public enum GateComplex
+    {
+        [StageOp(StageOpKind.Or)] DisjunctionState,
+        [StageOp(StageOpKind.And)] ConjunctionState,
+        [StageOp(StageOpKind.Or)] LastDisjunctionState,
+        [StageOp(StageOpKind.Override)] Override,
+    }
+    
     public enum Simple
     {
         [StageOp(StageOpKind.Add)] Flat,

@@ -56,5 +56,8 @@ namespace ModifiableVariable.Stages.StageFactory
         Override,
         Lerp,
         Scale,
+        
+        Or,
+        And
     }
 }

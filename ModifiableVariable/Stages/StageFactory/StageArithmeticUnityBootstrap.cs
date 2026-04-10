@@ -7,6 +7,11 @@ namespace ModifiableVariable.Stages.StageFactory
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
+            //bool
+            StageArithmetic<bool>.Register(StageOpKind.Override, (a, b) => b);
+            StageArithmetic<bool>.Register(StageOpKind.Or, (a, b) => a | b);
+            StageArithmetic<bool>.Register(StageOpKind.And, (a, b) => a & b);
+            
             // Vector2
             StageArithmetic<Vector2>.Register(StageOpKind.Add, (a, b) => a + b);
             StageArithmetic<Vector2>.Register(StageOpKind.Subtract, (a, b) => a - b);

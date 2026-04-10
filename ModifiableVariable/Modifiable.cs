@@ -15,12 +15,25 @@ namespace ModifiableVariable
         where TStage : Enum
     {
         [SerializeField] T _baseValue;
-        public T BaseValue => _baseValue;
-        
+        public T BaseValue
+        {
+            get => _baseValue;
+            set
+            {
+                if (!_comparer.Equals(_baseValue, value))
+                {
+                    _baseValue = value;
+                    _cachedFrame = -1;
+                } 
+            }
+        }
+
         readonly Dictionary<int, Stage<T>> _stageMap = new();
         T _cachedValue;
         T _defaultValue;
         bool _hasInited;
+        bool _modifiersHasChanged;
+        int _cachedCount;
         int _cachedFrame = -1;
         
         IEqualityComparer<T> _comparer;
@@ -52,6 +65,8 @@ namespace ModifiableVariable
             var s = new Stage<T>(op);
             _stages.Add(s);
             _stageMap[ToInt(stage)] = s;
+            
+            _modifiersHasChanged = true;
             return this;
         }        
         public Modifiable<T, TStage> AddStage((TStage, StageOp<T>) stage)
@@ -74,8 +89,10 @@ namespace ModifiableVariable
                 _defaultValue = _baseValue;
                 _hasInited = true;
             }
-            
-            if (!UpdateAndCheckDirty()) return _cachedValue;
+
+            UpdateCountIfDirty();
+            if (!IsFrameDirty())
+                return _cachedValue;
 
             var value = Calculate();
             if (!_comparer.Equals(_cachedValue, value))
@@ -88,20 +105,24 @@ namespace ModifiableVariable
          
         public ModifierDelegateHandler<T> Add(ModifierDelegate<T> modifier, TStage stage = default)
         {
-            return GetStage(stage).Add(modifier);
+            _modifiersHasChanged = true;
+            return GetStage(stage)?.Add(modifier) ?? default;
         }       
         
         public bool Remove(ModifierDelegate<T> modifier, TStage stage)
         {
-            return GetStage(stage).Remove(modifier);
+            _modifiersHasChanged = true;
+            return GetStage(stage)?.Remove(modifier) ?? false;
         }
         public bool Remove(ModifierDelegateHandler<T> handler, TStage stage)
         {
+            _modifiersHasChanged = true;
             return Remove(handler.Modifier, stage);
         }
         
         public bool Remove(ModifierDelegate<T> modifier)
         {
+            _modifiersHasChanged = true;
             for (var i = 0; i < _stages.Count; i++)
             {
                 if (_stages[i].Remove(modifier))
@@ -113,6 +134,7 @@ namespace ModifiableVariable
         }        
         public bool Remove(ModifierDelegateHandler<T> modifier)
         {
+            _modifiersHasChanged = true;
             for (var i = 0; i < _stages.Count; i++)
             {
                 if (_stages[i].Remove(modifier))
@@ -144,11 +166,21 @@ namespace ModifiableVariable
             }
             return value;
         }
-        bool UpdateAndCheckDirty()
+        bool IsFrameDirty()
         {
             var frame = _cachedFrame;
             _cachedFrame = Time.frameCount;
             return frame != _cachedFrame;
+        }
+        void UpdateCountIfDirty()
+        {
+            if (_modifiersHasChanged)
+            {
+                _modifiersHasChanged = false;
+                _cachedCount = 0;
+                for (var i = 0; i < _stages.Count; i++)
+                    _cachedCount += _stages[i].Modifiers.Count;
+            }
         }
         Stage<T> GetStage(TStage key) => !_stageMap.TryGetValue(ToInt(key), out var stage) ? _stages[0] : stage;
         static int ToInt(TStage key) => (int)(object)key;
@@ -161,6 +193,15 @@ namespace ModifiableVariable
         public static implicit operator Modifiable<T, TStage> (T obj)
         {
             return new Modifiable<T, TStage>(obj);
+        }
+
+        public int Count
+        {
+            get
+            {
+                UpdateCountIfDirty();
+                return _cachedCount;
+            }
         }
     }
 }
